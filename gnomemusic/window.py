@@ -76,6 +76,8 @@ class Window(Gtk.ApplicationWindow):
 
         self.prev_view = None
         self.curr_view = None
+        self.curr_pl_todelete_undo_notification_attach = False
+        self.curr_pl_todelete_undo_notification = None
 
         size_setting = self.settings.get_value('window-size')
         if isinstance(size_setting[0], int) and isinstance(size_setting[1], int):
@@ -345,6 +347,11 @@ class Window(Gtk.ApplicationWindow):
 
     @log
     def _init_playlist_removal_notification(self):
+        if self.curr_pl_todelete_undo_notification_attach:
+            self.curr_pl_todelete_undo_notification.dismiss()
+        else:
+            self.curr_pl_todelete_undo_notification_attach = True
+
         self.notification = Gd.Notification()
         self.notification.set_timeout(20)
 
@@ -360,6 +367,7 @@ class Window(Gtk.ApplicationWindow):
 
         self.notification.show_all()
         self._overlay.add_overlay(self.notification)
+        self.curr_pl_todelete_undo_notification = self.notification
 
         self.notification.deletion_index = self.views[3].current_playlist_index
 
@@ -368,6 +376,7 @@ class Window(Gtk.ApplicationWindow):
 
     @log
     def _playlist_removal_notification_dismissed(self, widget):
+        self.curr_pl_todelete_undo_notification_attach = False
         if self.views[3].really_delete:
             Views.playlists.delete_playlist(self.views[3].pl_todelete)
         else:
